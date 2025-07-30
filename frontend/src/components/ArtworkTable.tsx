@@ -23,7 +23,7 @@ export default function ArtworkTable() {
   const rows = 12;
 
   const [selectedArtworks, setSelectedArtworks] = useState<Artwork[]>([]);
-  const [selectCount, setSelectCount] = useState<number | "">("");
+  const [selectCount, setSelectCount] = useState<string>("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const opRef = useRef<OverlayPanel>(null);
 
@@ -34,7 +34,7 @@ export default function ArtworkTable() {
         `http://localhost:3000/api/artworks?page=${page}&limit=${rows}`
       );
       const json = await res.json();
-      setArtworks(json.data);
+      setArtworks(json.data as Artwork[]);
       setTotalRecords(json.total || 100);
     } catch (err) {
       console.error("Error loading data:", err);
@@ -53,16 +53,12 @@ export default function ArtworkTable() {
 
   const onSelectionChange = (e: { value: Artwork[] }) => {
     const currentSelections: Artwork[] = e.value;
-  
     const currentPageIDs = new Set(artworks.map((a) => a.id));
-  
     const retainedFromOtherPages = selectedArtworks.filter(
       (a) => !currentPageIDs.has(a.id)
     );
-  
     setSelectedArtworks([...retainedFromOtherPages, ...currentSelections]);
   };
-  
 
   const renderDropdownHeader = () => (
     <div className="flex justify-content-center items-center">
@@ -89,10 +85,10 @@ export default function ArtworkTable() {
             <InputText
               type="number"
               placeholder="select rows"
-              value={selectCount !== "" ? String(selectCount) : ""}
+              value={selectCount}
               onChange={(e) => {
                 const val = parseInt(e.target.value);
-                setSelectCount(isNaN(val) ? "" : val);
+                setSelectCount(isNaN(val) ? "" : String(val));
               }}
             />
             <div className="flex justify-content-between gap-2">
@@ -100,10 +96,10 @@ export default function ArtworkTable() {
                 label="Clear"
                 size="small"
                 severity="secondary"
-                
                 onClick={async () => {
-                  if (typeof selectCount === "number" && selectCount > 0) {
-                    const needed = selectCount;
+                  const count = parseInt(selectCount);
+                  if (!isNaN(count) && count > 0) {
+                    const needed = count;
                     const pageSize = rows;
                     const currentPage = Math.floor(first / pageSize) + 1;
                     const pagesToFetch = Math.ceil(needed / pageSize);
@@ -116,7 +112,7 @@ export default function ArtworkTable() {
                           `http://localhost:3000/api/artworks?page=${page}&limit=${rows}`
                         );
                         const json = await res.json();
-                        fetchedData.push(...json.data);
+                        fetchedData.push(...(json.data as Artwork[]));
                       } catch (err) {
                         console.error(`Error fetching page ${page}:`, err);
                       }
@@ -144,8 +140,9 @@ export default function ArtworkTable() {
                 label="Submit"
                 size="small"
                 onClick={async () => {
-                  if (typeof selectCount === "number" && selectCount > 0) {
-                    const needed = selectCount;
+                  const count = parseInt(selectCount);
+                  if (!isNaN(count) && count > 0) {
+                    const needed = count;
                     const pageSize = rows;
                     const currentPage = Math.floor(first / pageSize) + 1;
                     const pagesToFetch = Math.ceil(needed / pageSize);
@@ -158,7 +155,7 @@ export default function ArtworkTable() {
                           `http://localhost:3000/api/artworks?page=${page}&limit=${rows}`
                         );
                         const json = await res.json();
-                        fetchedData.push(...json.data);
+                        fetchedData.push(...(json.data as Artwork[]));
                       } catch (err) {
                         console.error(`Error fetching page ${page}:`, err);
                       }
@@ -166,7 +163,8 @@ export default function ArtworkTable() {
 
                     const selected = fetchedData.slice(0, needed);
                     const others = selectedArtworks.filter(
-                      (art) => !fetchedData.some((a) => a.id === art.id)
+                      (art) =>
+                        !fetchedData.some((fetched) => fetched.id === art.id)
                     );
                     setSelectedArtworks([...others, ...selected]);
                   } else {
@@ -199,13 +197,13 @@ export default function ArtworkTable() {
         loading={loading}
         dataKey="id"
         selection={artworks.filter((a) =>
-            selectedArtworks.some((s) => s.id === a.id)  
+          selectedArtworks.some((s) => s.id === a.id)
         )}
         rowHover
         onSelectionChange={onSelectionChange}
         selectionMode="checkbox"
         onRowClick={(e) => {
-          const clickedRow = e.data;
+          const clickedRow = e.data as Artwork;
           const isSelected = selectedArtworks.some(
             (a) => a.id === clickedRow.id
           );
@@ -219,7 +217,7 @@ export default function ArtworkTable() {
         }}
         tableStyle={{ minWidth: "50rem" }}
       >
-        <Column selectionMode="multiple" headerStyle={{ width: "3rem" }}  />
+        <Column selectionMode="multiple" headerStyle={{ width: "3rem" }} />
         <Column
           header={renderDropdownHeader()}
           style={{ width: "2rem" }}
@@ -227,10 +225,26 @@ export default function ArtworkTable() {
           exportable={false}
         />
         <Column field="title" header="Title" style={{ width: "20%" }} />
-        <Column field="place_of_origin" header="Place of Origin" style={{ width: "20%" }} />
-        <Column field="artist_display" header="Artist" style={{ width: "20%" }} />
-        <Column field="inscriptions" header="Inscriptions" style={{ width: "25%" }} />
-        <Column field="date_start" header="Start Date" style={{ width: "7%" }} />
+        <Column
+          field="place_of_origin"
+          header="Place of Origin"
+          style={{ width: "20%" }}
+        />
+        <Column
+          field="artist_display"
+          header="Artist"
+          style={{ width: "20%" }}
+        />
+        <Column
+          field="inscriptions"
+          header="Inscriptions"
+          style={{ width: "25%" }}
+        />
+        <Column
+          field="date_start"
+          header="Start Date"
+          style={{ width: "7%" }}
+        />
         <Column field="date_end" header="End Date" style={{ width: "7%" }} />
       </DataTable>
     </div>
