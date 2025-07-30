@@ -3,9 +3,12 @@ import axios from 'axios';
 import cors from 'cors';
 
 const app = express();
-const PORT = 3000;
 
-app.use(cors());
+app.use(cors({
+  origin: true 
+}));
+
+const PORT = process.env.PORT || 3000;
 
 app.get('/api/artworks', async (req, res) => {
   try {

@@ -27,11 +27,11 @@ export default function ArtworkTable() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const opRef = useRef<OverlayPanel>(null);
 
+  const backendBaseUrl = import.meta.env.VITE_API_URL;
+
   const loadData = async (page: number) => {
     setLoading(true);
     try {
-      const backendBaseUrl = import.meta.env.VITE_API_URL;
-
       const res = await fetch(
         `${backendBaseUrl}/api/artworks?page=${page}&limit=${rows}`
       );
@@ -111,7 +111,7 @@ export default function ArtworkTable() {
                       const page = currentPage + i;
                       try {
                         const res = await fetch(
-                          `http://localhost:3000/api/artworks?page=${page}&limit=${rows}`
+                          `${backendBaseUrl}/api/artworks?page=${page}&limit=${rows}`
                         );
                         const json = await res.json();
                         fetchedData.push(...(json.data as Artwork[]));
@@ -154,7 +154,7 @@ export default function ArtworkTable() {
                       const page = currentPage + i;
                       try {
                         const res = await fetch(
-                          `http://localhost:3000/api/artworks?page=${page}&limit=${rows}`
+                          `${backendBaseUrl}/api/artworks?page=${page}&limit=${rows}`
                         );
                         const json = await res.json();
                         fetchedData.push(...(json.data as Artwork[]));
