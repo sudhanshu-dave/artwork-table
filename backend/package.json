@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node-dev index.ts",
-    "build": "node ./node_modules/typescript/bin/tsc",
+    "build": "tsc",
     "start": "node dist/index.js"
   },
   "keywords": [],
